@@ -3,7 +3,11 @@ import {
   Box, 
   CircularProgress, 
   Typography, 
-  Alert,
+  Alert, 
+  FormControl, 
+  InputLabel, 
+  Select, 
+  MenuItem,
   Paper
 } from '@mui/material';
 import NotificationCard from './NotificationCard';
@@ -12,6 +16,7 @@ const NotificationFeed = () => {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [filterCategory, setFilterCategory] = useState('All');
 
   useEffect(() => {
     const fetchNotifications = async () => {
@@ -50,6 +55,17 @@ const NotificationFeed = () => {
     return () => clearInterval(interval);
   }, []);
 
+  const handleFilterChange = (event) => {
+    setFilterCategory(event.target.value);
+  };
+
+  const filteredNotifications = filterCategory === 'All' 
+    ? notifications 
+    : notifications.filter(n => {
+        const type = n.notificationType || n.Type || n.type || 'Notice';
+        return type.toLowerCase() === filterCategory.toLowerCase();
+      });
+
   if (loading && notifications.length === 0) {
     return (
       <Box display="flex" justifyContent="center" my={8}>
@@ -73,9 +89,30 @@ const NotificationFeed = () => {
         <Typography variant="h6" fontWeight="bold">
           Recent Activity
         </Typography>
+        
+        <FormControl size="small" sx={{ minWidth: 140 }}>
+          <InputLabel id="category-filter-label">Filter Type</InputLabel>
+          <Select
+            labelId="category-filter-label"
+            id="category-filter"
+            value={filterCategory}
+            label="Filter Type"
+            onChange={handleFilterChange}
+            sx={{ 
+              borderRadius: 2,
+              backgroundColor: 'rgba(255,255,255,0.05)'
+            }}
+          >
+            <MenuItem value="All">All Notifications</MenuItem>
+            <MenuItem value="Result">Result</MenuItem>
+            <MenuItem value="Placement">Placement</MenuItem>
+            <MenuItem value="Event">Event</MenuItem>
+            <MenuItem value="Notice">Notice</MenuItem>
+          </Select>
+        </FormControl>
       </Box>
 
-      {notifications.length === 0 ? (
+      {filteredNotifications.length === 0 ? (
         <Paper 
           sx={{ 
             p: 4, 
@@ -85,11 +122,11 @@ const NotificationFeed = () => {
           }} 
           elevation={0}
         >
-          <Typography color="text.secondary">No notifications found.</Typography>
+          <Typography color="text.secondary">No notifications found in this category.</Typography>
         </Paper>
       ) : (
-        <Box display="flex" flexDirection="column" gap={1}>
-          {notifications.map((notif, index) => (
+        <Box display="flex" flexDirection="column" gap={0}>
+          {filteredNotifications.map((notif, index) => (
             <NotificationCard 
               key={notif.id || notif.ID || notif._id || index} 
               notification={notif} 
