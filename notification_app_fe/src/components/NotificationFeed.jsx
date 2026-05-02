@@ -1,4 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { 
+  Box, 
+  CircularProgress, 
+  Typography, 
+  Alert,
+  Paper
+} from '@mui/material';
 import NotificationCard from './NotificationCard';
 
 const NotificationFeed = () => {
@@ -12,7 +19,7 @@ const NotificationFeed = () => {
         setLoading(true);
         setError(null);
         
-        const response = await fetch('/api/notifications?limit=10');
+        const response = await fetch('/api/notifications?limit=20');
         
         if (!response.ok) {
           throw new Error(`Error: ${response.status} - ${response.statusText}`);
@@ -39,45 +46,58 @@ const NotificationFeed = () => {
     };
 
     fetchNotifications();
-    
-    // Optional polling for real-time feel (every 60 seconds)
     const interval = setInterval(fetchNotifications, 60000);
     return () => clearInterval(interval);
   }, []);
 
   if (loading && notifications.length === 0) {
-    return <div className="loading-spinner"></div>;
+    return (
+      <Box display="flex" justifyContent="center" my={8}>
+        <CircularProgress color="primary" />
+      </Box>
+    );
   }
 
   if (error && notifications.length === 0) {
     return (
-      <div className="error-message">
-        <h3>Connection Failed</h3>
-        <p>{error}</p>
-        <p style={{marginTop: '0.5rem', fontSize: '0.85rem', opacity: 0.8}}>
-          Please ensure the backend server is running on port 3000 and your ACCESS_TOKEN is valid.
-        </p>
-      </div>
-    );
-  }
-
-  if (notifications.length === 0) {
-    return (
-      <div className="glass-card" style={{textAlign: 'center'}}>
-        <p>No notifications found. You're all caught up!</p>
-      </div>
+      <Alert severity="error" sx={{ mt: 2, mb: 4, borderRadius: 2 }}>
+        <Typography variant="subtitle1" fontWeight="bold">Connection Failed</Typography>
+        <Typography variant="body2">{error}</Typography>
+      </Alert>
     );
   }
 
   return (
-    <div className="feed-container">
-      {notifications.map((notif, index) => (
-        <NotificationCard 
-          key={notif.id || notif._id || index} 
-          notification={notif} 
-        />
-      ))}
-    </div>
+    <Box sx={{ mt: 2, mb: 8 }}>
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+        <Typography variant="h6" fontWeight="bold">
+          Recent Activity
+        </Typography>
+      </Box>
+
+      {notifications.length === 0 ? (
+        <Paper 
+          sx={{ 
+            p: 4, 
+            textAlign: 'center', 
+            bgcolor: 'rgba(255,255,255,0.03)',
+            border: '1px dashed rgba(255,255,255,0.1)'
+          }} 
+          elevation={0}
+        >
+          <Typography color="text.secondary">No notifications found.</Typography>
+        </Paper>
+      ) : (
+        <Box display="flex" flexDirection="column" gap={1}>
+          {notifications.map((notif, index) => (
+            <NotificationCard 
+              key={notif.id || notif.ID || notif._id || index} 
+              notification={notif} 
+            />
+          ))}
+        </Box>
+      )}
+    </Box>
   );
 };
 
