@@ -1,18 +1,15 @@
 import React from 'react';
 
 const NotificationCard = ({ notification }) => {
-  // Try to safely access the properties returned by the actual API
-  const mainMessage = notification.description || notification.Description || notification.body || notification.Message || notification.message || 'No details provided.';
-  const category = notification.notificationType || notification.Type || notification.type || 'Notice';
-  const subTitle = notification.title || notification.Title || notification.heading || `New ${category} Alert`;
+  const title = notification.title || notification.Title || notification.heading || 'New Notification';
+  const description = notification.description || notification.Description || notification.body || notification.Message || notification.message || 'No details provided.';
+  const type = notification.notificationType || notification.Type || notification.type || 'Event';
   const priority = notification.priorityScore || notification.Priority || notification.priority || 0;
   
-  // Try to format date, fallback to current time string if missing
   let dateStr = 'Just now';
-  const timestamp = notification.createdAt || notification.Timestamp || notification.date || notification.timestamp;
-  if (timestamp) {
+  if (notification.createdAt || notification.Timestamp || notification.date || notification.timestamp) {
     try {
-      const d = new Date(timestamp);
+      const d = new Date(notification.createdAt || notification.Timestamp || notification.date || notification.timestamp);
       dateStr = d.toLocaleDateString(undefined, { 
         month: 'short', 
         day: 'numeric',
@@ -22,23 +19,24 @@ const NotificationCard = ({ notification }) => {
     } catch(e) {}
   }
 
-  const badgeClass = `notification-badge badge-${category.toLowerCase()}`;
+  const badgeClass = `notification-badge badge-${type.toLowerCase()}`;
 
   return (
     <div className="glass-card">
       <div className="notification-header">
-        <div className="header-text">
-          <span className="sub-header">{subTitle}</span>
-          <h3 className="notification-title">{mainMessage}</h3>
-        </div>
-        <span className={badgeClass}>{category}</span>
+        <h3 className="notification-title">{title}</h3>
+        <span className={badgeClass}>{type}</span>
       </div>
+      
+      <p className="notification-body">
+        {description}
+      </p>
       
       <div className="notification-footer">
         <span className="timestamp">{dateStr}</span>
         {priority > 0 && (
-          <span className="priority-indicator">
-            Priority Level: {priority}
+          <span className="priority-indicator" style={{color: 'var(--accent)'}}>
+            Priority Score: {priority}
           </span>
         )}
       </div>
